@@ -27,6 +27,8 @@
  * $logger->logRequest($_SERVER, $responseData);
  */
 
+define('VLOGGER_BASE_PATH', dirname(__FILE__));
+
 class VLogger {
     private $config;
     private $projectInfo;
@@ -167,7 +169,7 @@ class VLogger {
     private function loadConfig($providedConfig) {
         $defaultConfig = [
             'storage' => [
-                'path' => './logs',
+                'path' => VLOGGER_BASE_PATH . '/logs',
                 'maxFileSize' => 10 * 1024 * 1024, // 10MB
                 'maxFiles' => 10
             ],
@@ -195,7 +197,7 @@ class VLogger {
         ];
         
         $fileConfig = [];
-        if (file_exists('./vlogger.config.json')) {
+        if (file_exists(VLOGGER_BASE_PATH . '/vlogger.config.json')) {
             $fileConfig = json_decode(file_get_contents('./vlogger.config.json'), true) ?: [];
         }
         
@@ -216,14 +218,14 @@ class VLogger {
             ]
         ];
         
-        if (file_exists('./vlogger.info')) {
+        if (file_exists(VLOGGER_BASE_PATH . '/vlogger.info')) {
             $fileInfo = json_decode(file_get_contents('./vlogger.info'), true);
             if ($fileInfo) {
                 return array_merge($defaultInfo, $fileInfo);
             }
         }
         
-        if (file_exists('./composer.json')) {
+        if (file_exists(VLOGGER_BASE_PATH . '/composer.json')) {
             $composer = json_decode(file_get_contents('./composer.json'), true);
             if ($composer) {
                 return array_merge($defaultInfo, [
