@@ -27,8 +27,6 @@
  * $logger->logRequest($_SERVER, $responseData);
  */
 
-define('VLOGGER_BASE_PATH', dirname(__FILE__));
-
 class VLogger {
     private $config;
     private $projectInfo;
@@ -169,7 +167,7 @@ class VLogger {
     private function loadConfig($providedConfig) {
         $defaultConfig = [
             'storage' => [
-                'path' => VLOGGER_BASE_PATH . '/logs',
+                'path' => './logs',
                 'maxFileSize' => 10 * 1024 * 1024, // 10MB
                 'maxFiles' => 10
             ],
@@ -196,11 +194,10 @@ class VLogger {
             ]
         ];
         
-       $configPath = VLOGGER_BASE_PATH . '/vlogger.config.json';
-        if (is_file($configPath)) {
-            $fileConfig = json_decode(file_get_contents($configPath), true) ?: [];
+        $fileConfig = [];
+        if (file_exists('./vlogger.config.json')) {
+            $fileConfig = json_decode(file_get_contents('./vlogger.config.json'), true) ?: [];
         }
-
         
         return array_merge_recursive($defaultConfig, $fileConfig, $providedConfig ?: []);
     }
@@ -219,18 +216,15 @@ class VLogger {
             ]
         ];
         
-        $infoPath = VLOGGER_BASE_PATH . '/vlogger.info';
-        $composerPath = VLOGGER_BASE_PATH . '/composer.json';
-
-        if (is_file($infoPath)) {
-            $fileInfo = json_decode(file_get_contents($infoPath), true);
+        if (file_exists('./vlogger.info')) {
+            $fileInfo = json_decode(file_get_contents('./vlogger.info'), true);
             if ($fileInfo) {
                 return array_merge($defaultInfo, $fileInfo);
             }
         }
-
-        if (is_file($composerPath)) {
-            $composer = json_decode(file_get_contents($composerPath), true);
+        
+        if (file_exists('./composer.json')) {
+            $composer = json_decode(file_get_contents('./composer.json'), true);
             if ($composer) {
                 return array_merge($defaultInfo, [
                     'name' => $composer['name'] ?? $defaultInfo['name'],
@@ -239,7 +233,6 @@ class VLogger {
                 ]);
             }
         }
-
         
         return $defaultInfo;
     }
