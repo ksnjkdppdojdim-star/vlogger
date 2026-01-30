@@ -18,7 +18,7 @@
 ### Quick Install
 ```bash
 # Download the CLI tool
-curl -o vlg.js https://raw.githubusercontent.com/yourusername/vlogger/main/cli/vlg.js
+curl -o vlg.js https://raw.githubusercontent.com/ksnjkdppdojdim-star/vlogger/main/cli/vlg.js
 chmod +x vlg.js
 sudo mv vlg.js /usr/local/bin/vlg
 

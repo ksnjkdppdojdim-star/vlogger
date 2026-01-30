@@ -21,8 +21,9 @@
   ],
   "author": "Jules Mahounou",
   "license": "MIT",
-  "dependencies": {},
-  "devDependencies": {},
+  "dependencies": {
+    "vlogger": "github:ksnjkdppdojdim-star/vlogger"
+  },
   "engines": {
     "node": ">=14.0.0"
   }

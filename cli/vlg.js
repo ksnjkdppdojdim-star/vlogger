@@ -24,7 +24,7 @@ const { execSync, spawn } = require('child_process');
 const http = require('http');
 
 const VLOGGER_VERSION = '1.0.0';
-const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/yourusername/vlogger/main';
+const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/ksnjkdppdojdim-star/vlogger/main';
 
 /**
  * VLogger CLI class
@@ -310,35 +310,61 @@ class VLoggerCLI {
   }
 
   /**
+   * Télécharge un fichier depuis GitHub (ou autre URL)
+   * @param {string} url - URL du fichier raw
+   * @param {string} dest - chemin local de destination
+   */
+  downloadFile(url, dest) {
+    const fs = require('fs');
+    const { execSync } = require('child_process');
+    const https = require('https');
+
+    if (this.hasCommand('curl')) {
+      // Utilise curl si disponible
+      try {
+        execSync(`curl -s -L "${url}" -o "${dest}"`, { stdio: 'inherit' });
+        console.log(`✅ Downloaded ${dest}`);
+        return;
+      } catch (error) {
+        console.warn(`⚠️ curl failed: ${error.message}, fallback to Node HTTPS`);
+      }
+    }
+
+    // Node HTTPS fallback
+    const file = fs.createWriteStream(dest);
+    https.get(url, (res) => {
+      if (res.statusCode !== 200) {
+        console.error(`❌ Failed to download ${url} (status: ${res.statusCode})`);
+        return;
+      }
+      res.pipe(file);
+      file.on('finish', () => {
+        file.close();
+        console.log(`✅ Downloaded ${dest}`);
+      });
+    }).on('error', (err) => {
+      fs.unlinkSync(dest);
+      console.error(`❌ Download error: ${err.message}`);
+    });
+  }
+
+
+  /**
    * Download adapter from GitHub
    */
   downloadAdapter(language, adapterPath) {
     const fileName = path.basename(adapterPath);
     const url = `${GITHUB_BASE_URL}/${adapterPath}`;
     
-    try {
-      console.log(`📥 Downloading ${fileName}...`);
-      
-      // Use curl or wget to download
-      const command = this.hasCommand('curl') ? 
-        `curl -s -L "${url}" -o "${fileName}"` :
-        `wget -q "${url}" -O "${fileName}"`;
-      
-      execSync(command, { stdio: 'inherit' });
-      console.log(`✅ Downloaded ${fileName}`);
-    } catch (error) {
-      console.error(`❌ Failed to download adapter: ${error.message}`);
-      console.log('\n🔗 Manual download:');
-      console.log(`   ${url}`);
-      process.exit(1);
-    }
+    console.log(`📥 Downloading ${fileName}...`);
+    this.downloadFile(url, fileName);
   }
+
 
   /**
    * Copy additional required files
    */
   copyAdditionalFiles(language) {
-    // Download dashboard files
     this.ensureDirectory('dashboard');
     
     const dashboardFiles = ['index.html', 'style.css', 'script.js'];
@@ -346,18 +372,11 @@ class VLoggerCLI {
       const url = `${GITHUB_BASE_URL}/dashboard/${file}`;
       const localPath = `dashboard/${file}`;
       
-      try {
-        const command = this.hasCommand('curl') ? 
-          `curl -s -L "${url}" -o "${localPath}"` :
-          `wget -q "${url}" -O "${localPath}"`;
-        
-        execSync(command, { stdio: 'inherit' });
-        console.log(`✅ Downloaded dashboard/${file}`);
-      } catch (error) {
-        console.warn(`⚠️  Could not download ${file}: ${error.message}`);
-      }
+      console.log(`📥 Downloading dashboard/${file}...`);
+      this.downloadFile(url, localPath);
     });
   }
+
 
   /**
    * Check if command exists
@@ -903,7 +922,7 @@ class VLoggerCLI {
     console.log('  vlg clean --all         # Delete all log files');
     
     console.log('\nFor more information, visit:');
-    console.log('  https://github.com/yourusername/vlogger');
+    console.log('  https://github.com/ksnjkdppdojdim-star/vlogger');
   }
 
   /**

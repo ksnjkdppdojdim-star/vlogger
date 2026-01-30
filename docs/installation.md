@@ -17,7 +17,7 @@
 **Global Installation (Recommended):**
 ```bash
 # Download CLI tool
-curl -o vlg.js https://raw.githubusercontent.com/yourusername/vlogger/main/cli/vlg.js
+curl -o vlg.js https://raw.githubusercontent.com/ksnjkdppdojdim-star/vlogger/main/cli/vlg.js
 chmod +x vlg.js
 sudo mv vlg.js /usr/local/bin/vlg
 
@@ -28,7 +28,7 @@ npm install -g vlogger
 **Manual Installation:**
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/vlogger.git
+git clone https://github.com/ksnjkdppdojdim-star/vlogger.git
 cd vlogger
 
 # Make CLI executable
@@ -83,7 +83,7 @@ vlg install
 **Manual Installation:**
 ```bash
 # Download adapter
-curl -o vlogger.js https://raw.githubusercontent.com/yourusername/vlogger/main/adapters/javascript/vlogger.js
+curl -o vlogger.js https://raw.githubusercontent.com/ksnjkdppdojdim-star/vlogger/main/adapters/javascript/vlogger.js
 
 # Create config files (see templates)
 ```
@@ -107,7 +107,7 @@ vlg install
 **Manual Installation:**
 ```bash
 # Download adapter
-curl -o vlogger.php https://raw.githubusercontent.com/yourusername/vlogger/main/adapters/php/vlogger.php
+curl -o vlogger.php https://raw.githubusercontent.com/ksnjkdppdojdim-star/vlogger/main/adapters/php/vlogger.php
 ```
 
 **Dependencies:**
@@ -129,7 +129,7 @@ vlg install
 **Manual Installation:**
 ```bash
 # Download adapter
-curl -o vlogger.py https://raw.githubusercontent.com/yourusername/vlogger/main/adapters/python/vlogger.py
+curl -o vlogger.py https://raw.githubusercontent.com/ksnjkdppdojdim-star/vlogger/main/adapters/python/vlogger.py
 
 # Install optional dependencies
 pip install psutil  # For memory monitoring
@@ -153,7 +153,7 @@ vlg install
 **Manual Installation:**
 ```bash
 # Download adapter
-curl -o VLogger.java https://raw.githubusercontent.com/yourusername/vlogger/main/adapters/java/VLogger.java
+curl -o VLogger.java https://raw.githubusercontent.com/ksnjkdppdojdim-star/vlogger/main/adapters/java/VLogger.java
 ```
 
 ### Go
@@ -170,7 +170,7 @@ vlg install
 **Manual Installation:**
 ```bash
 # Download adapter
-curl -o vlogger.go https://raw.githubusercontent.com/yourusername/vlogger/main/adapters/go/vlogger.go
+curl -o vlogger.go https://raw.githubusercontent.com/ksnjkdppdojdim-star/vlogger/main/adapters/go/vlogger.go
 ```
 
 ## Framework Integration
@@ -525,8 +525,8 @@ vlg init
 
 ### Getting Help
 
-- **GitHub Issues:** https://github.com/yourusername/vlogger/issues
-- **Documentation:** https://github.com/yourusername/vlogger/docs
-- **Examples:** https://github.com/yourusername/vlogger/examples
+- **GitHub Issues:** https://github.com/ksnjkdppdojdim-star/vlogger/issues
+- **Documentation:** https://github.com/ksnjkdppdojdim-star/vlogger/docs
+- **Examples:** https://github.com/ksnjkdppdojdim-star/vlogger/examples
 
 For more detailed configuration options, see the [Configuration Reference](configuration.md).
