@@ -196,10 +196,11 @@ class VLogger {
             ]
         ];
         
-        $fileConfig = [];
-        if (file_exists(VLOGGER_BASE_PATH . '/vlogger.config.json')) {
-            $fileConfig = json_decode(file_get_contents('./vlogger.config.json'), true) ?: [];
+       $configPath = VLOGGER_BASE_PATH . '/vlogger.config.json';
+        if (is_file($configPath)) {
+            $fileConfig = json_decode(file_get_contents($configPath), true) ?: [];
         }
+
         
         return array_merge_recursive($defaultConfig, $fileConfig, $providedConfig ?: []);
     }
@@ -218,15 +219,18 @@ class VLogger {
             ]
         ];
         
-        if (file_exists(VLOGGER_BASE_PATH . '/vlogger.info')) {
-            $fileInfo = json_decode(file_get_contents('./vlogger.info'), true);
+        $infoPath = VLOGGER_BASE_PATH . '/vlogger.info';
+        $composerPath = VLOGGER_BASE_PATH . '/composer.json';
+
+        if (is_file($infoPath)) {
+            $fileInfo = json_decode(file_get_contents($infoPath), true);
             if ($fileInfo) {
                 return array_merge($defaultInfo, $fileInfo);
             }
         }
-        
-        if (file_exists(VLOGGER_BASE_PATH . '/composer.json')) {
-            $composer = json_decode(file_get_contents('./composer.json'), true);
+
+        if (is_file($composerPath)) {
+            $composer = json_decode(file_get_contents($composerPath), true);
             if ($composer) {
                 return array_merge($defaultInfo, [
                     'name' => $composer['name'] ?? $defaultInfo['name'],
@@ -235,6 +239,7 @@ class VLogger {
                 ]);
             }
         }
+
         
         return $defaultInfo;
     }
