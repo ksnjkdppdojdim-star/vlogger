@@ -499,35 +499,70 @@ class VLoggerCLI {
 
   /**
    * Start application with VLogger
+   * Usage:
+   *   npx vlg start           -> auto détecte le fichier principal
+   *   npx vlg start app.js    -> utilise app.js comme point d'entrée
    */
   startApplication() {
     console.log('🚀 Starting application with VLogger...\n');
 
-    // Check install.vlg for start command
-    if (fs.existsSync('install.vlg')) {
-      const config = JSON.parse(fs.readFileSync('install.vlg', 'utf8'));
-      const language = config.language;
-
-      // Language-specific start commands
-      const startCommands = {
-        javascript: this.findNodeStartCommand(),
-        php: 'php -S localhost:8000',
-        python: this.findPythonStartCommand(),
-        java: 'mvn spring-boot:run',
-        go: 'go run .'
-      };
-
-      const command = startCommands[language];
-      if (command) {
-        console.log(`▶️  Starting ${language} application: ${command}`);
-        spawn(command, { shell: true, stdio: 'inherit' });
-      } else {
-        console.error('❌ No start command configured for this language');
-      }
-    } else {
+    // Check install.vlg exists
+    if (!fs.existsSync('install.vlg')) {
       console.error('❌ No install.vlg found. Run "vlg init" first.');
+      return;
     }
+
+    const config = JSON.parse(fs.readFileSync('install.vlg', 'utf8'));
+    const language = config.language;
+
+    // Récupère le fichier principal passé en argument (ex: `npx vlg start app.js`)
+    const entryFile = this.args[0]; 
+
+    let command;
+
+    switch (language) {
+      case 'javascript':
+        if (entryFile && fs.existsSync(entryFile)) {
+          command = `node ${entryFile}`;
+        } else {
+          command = this.findNodeStartCommand();
+        }
+        break;
+
+      case 'php':
+        command = 'php -S localhost:8000';
+        break;
+
+      case 'python':
+        if (entryFile && fs.existsSync(entryFile)) {
+          command = `python ${entryFile}`;
+        } else {
+          command = this.findPythonStartCommand();
+        }
+        break;
+
+      case 'java':
+        command = 'mvn spring-boot:run';
+        break;
+
+      case 'go':
+        command = 'go run .';
+        break;
+
+      default:
+        console.error(`❌ No start command configured for language: ${language}`);
+        return;
+    }
+
+    if (!command) {
+      console.error('❌ Could not determine start command.');
+      return;
+    }
+
+    console.log(`▶️  Starting ${language} application: ${command}`);
+    spawn(command, { shell: true, stdio: 'inherit' });
   }
+
 
   /**
    * Find Node.js start command
