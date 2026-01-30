@@ -1,0 +1,29 @@
+{
+  "name": "vlogger",
+  "version": "1.0.0",
+  "description": "Multi-language logging system with dashboard and CLI",
+  "main": "core/vlogger.js",
+  "bin": {
+    "vlg": "cli/vlg.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node scripts/build.js",
+    "dev": "node examples/javascript/app.js"
+  },
+  "keywords": [
+    "logging",
+    "monitoring",
+    "api",
+    "dashboard",
+    "multi-language",
+    "debugging"
+  ],
+  "author": "Jules Mahounou",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

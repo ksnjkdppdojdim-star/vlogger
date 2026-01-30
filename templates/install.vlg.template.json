@@ -1,0 +1,81 @@
+{
+  "name": "{{project_name}}",
+  "language": "{{language}}",
+  "version": "1.0.0",
+  "description": "{{project_name}} - VLogger enabled project",
+  "author": "",
+  "email": "",
+  "license": "MIT",
+  "vlogger": {
+    "version": "^1.0.0",
+    "adapter": "adapters/{{language}}/vlogger.{{extension}}",
+    "config": {
+      "dashboard": {
+        "enabled": true,
+        "port": 3333,
+        "openBrowser": false
+      },
+      "storage": {
+        "path": "./logs",
+        "maxFiles": 10,
+        "maxFileSize": "10MB"
+      },
+      "capture": {
+        "requests": true,
+        "responses": true,
+        "headers": true,
+        "queryParams": true,
+        "body": true,
+        "performance": true,
+        "errors": true
+      },
+      "sanitize": {
+        "enabled": true,
+        "headers": [
+          "authorization",
+          "cookie",
+          "x-api-key",
+          "x-auth-token"
+        ],
+        "bodyFields": [
+          "password",
+          "token",
+          "secret",
+          "key",
+          "pass"
+        ],
+        "queryParams": [
+          "api_key",
+          "token",
+          "password"
+        ]
+      },
+      "filters": {
+        "excludePaths": [
+          "/favicon.ico",
+          "/health",
+          "/ping",
+          "/metrics"
+        ],
+        "excludeStaticFiles": true,
+        "minDuration": 0,
+        "captureOnlyErrors": false
+      },
+      "documentation": {
+        "autoGenerate": true,
+        "outputPath": "./docs",
+        "format": "markdown",
+        "includeExamples": true,
+        "groupByTag": true
+      }
+    },
+    "dependencies": {
+      "{{language}}": "{{language_dependencies}}"
+    }
+  },
+  "scripts": {
+    "vlogger:start": "{{start_command}}",
+    "vlogger:dashboard": "{{dashboard_command}}",
+    "vlogger:export": "{{export_command}}"
+  }
+}
