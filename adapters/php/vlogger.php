@@ -199,7 +199,8 @@ class VLogger {
             $fileConfig = json_decode(file_get_contents('./vlogger.config.json'), true) ?: [];
         }
         
-        return array_merge_recursive($defaultConfig, $fileConfig, $providedConfig ?: []);
+        return array_replace_recursive($defaultConfig, $fileConfig, $providedConfig ?: []);
+
     }
     
     /**
@@ -380,8 +381,17 @@ class VLogger {
      * Generate unique ID for log entry
      */
     private function generateId($startTime) {
-        return intval($startTime * 1000) . '-' . substr(md5(uniqid()), 0, 8);
+        // Pour PHP >= 8.2, éviter la conversion implicite
+        if (PHP_VERSION_ID >= 80200) {
+            $ms = number_format($startTime * 1000, 0, '', '');
+        } else {
+            $ms = (int) round($startTime * 1000);
+        }
+
+        return $ms . '-' . substr(md5(uniqid('', true)), 0, 8);
     }
+
+
     
     /**
      * Get full URL from server data

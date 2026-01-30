@@ -17,6 +17,23 @@
 
 ### Quick Install
 ```bash
+#Init project
+npm init -y
+npm install ksnjkdppdojdim-star/vlogger
+# verifier que Vlogger est bien installé
+npx lvg 
+
+#init vlog configuration
+npx vlg init
+npx vlg install
+
+#start app with vlogger
+npx vlg start
+```
+
+
+### Curl Install
+```bash
 # Download the CLI tool
 curl -o vlg.js https://raw.githubusercontent.com/ksnjkdppdojdim-star/vlogger/main/cli/vlg.js
 chmod +x vlg.js
