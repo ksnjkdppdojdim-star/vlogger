@@ -644,7 +644,7 @@ class VLogger {
    */
   serveStaticFile(res, filename, contentType) {
     try {
-      const dashboardPath = path.join(__dirname, 'dashboard', filename);
+      const dashboardPath = path.join(__dirname, '../../dashboard', filename);
       if (fs.existsSync(dashboardPath)) {
         const content = fs.readFileSync(dashboardPath, 'utf8');
         res.writeHead(200, { 'Content-Type': contentType });
@@ -664,7 +664,7 @@ class VLogger {
    */
   serveDashboardHTML(res) {
     try {
-      const dashboardPath = path.join(__dirname, 'dashboard/index.html');
+      const dashboardPath = path.join(__dirname, '../../dashboard/index.html');
       if (fs.existsSync(dashboardPath)) {
         const html = fs.readFileSync(dashboardPath, 'utf8');
         res.writeHead(200, { 'Content-Type': 'text/html' });
