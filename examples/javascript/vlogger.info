@@ -1,0 +1,19 @@
+{
+  "name": "javascript",
+  "version": "1.5.12",
+  "description": "javascript API",
+  "author": "",
+  "email": "",
+  "license": "MIT",
+  "links": {
+    "repository": "",
+    "documentation": "",
+    "homepage": ""
+  },
+  "team": {},
+  "api": {
+    "version": "1.0",
+    "baseUrl": "http://localhost:3000",
+    "description": "javascript API endpoints"
+  }
+}

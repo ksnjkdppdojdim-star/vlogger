@@ -1,0 +1,56 @@
+{
+  "name": "javascript",
+  "language": "javascript",
+  "version": "1.5.12",
+  "description": "javascript - VLogger enabled project",
+  "vlogger": {
+    "version": "^1.5.12",
+    "adapter": "adapters/javascript/vlogger.js",
+    "config": {
+      "dashboard": {
+        "enabled": true,
+        "port": 3333,
+        "openBrowser": false
+      },
+      "storage": {
+        "path": "./logs",
+        "maxFiles": 10,
+        "maxFileSize": "10MB"
+      },
+      "capture": {
+        "requests": true,
+        "responses": true,
+        "headers": true,
+        "body": true,
+        "performance": true
+      },
+      "sanitize": {
+        "enabled": true,
+        "headers": [
+          "authorization",
+          "cookie",
+          "x-api-key"
+        ],
+        "bodyFields": [
+          "password",
+          "token",
+          "secret"
+        ],
+        "queryParams": [
+          "api_key",
+          "token"
+        ]
+      },
+      "filters": {
+        "excludePaths": [
+          "/favicon.ico",
+          "/health",
+          "/ping"
+        ],
+        "excludeStaticFiles": true,
+        "minDuration": 0,
+        "captureOnlyErrors": false
+      }
+    }
+  }
+}

@@ -453,10 +453,8 @@ class VLoggerCLI {
     try {
       console.log(`📥 Downloading ${fileName}...`);
       
-      // Use curl or wget to download
-      const command = this.hasCommand('curl') ? 
-        `curl -s -L "${url}" -o "${fileName}"` :
-        `wget -q "${url}" -O "${fileName}"`;
+      // Use curl (primary, works on Windows 10+)
+      const command = `curl -s -L "${url}" -o "${fileName}"`;
       
       execSync(command, { stdio: 'inherit' });
       console.log(`✅ Downloaded ${fileName}`);
@@ -481,9 +479,7 @@ class VLoggerCLI {
       const localPath = `dashboard/${file}`;
       
       try {
-        const command = this.hasCommand('curl') ? 
-          `curl -s -L "${url}" -o "${localPath}"` :
-          `wget -q "${url}" -O "${localPath}"`;
+        const command = `curl -s -L "${url}" -o "${localPath}"`;
         
         execSync(command, { stdio: 'inherit' });
         console.log(`✅ Downloaded dashboard/${file}`);
