@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+where = ["."]
+include = ["vlogger"]
+name = "vlogger"
+version = "1.5.12"
+description = "VLogger Python adapter"
+readme = "README.md"
+authors = [{name = "Jules Mahounou"}]
+license = {text = "MIT"}
+dependencies = []
