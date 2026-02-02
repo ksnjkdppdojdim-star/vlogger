@@ -1,0 +1,41 @@
+{
+  "name": "vlogger-cli",
+  "version": "1.5.12",
+  "description": "CLI universelle pour VLogger - Système de journalisation multi-langage",
+  "main": "vlg.js",
+  "bin": {
+    "vlg": "vlg.js"
+  },
+  "scripts": {
+    "test": "node vlg.js help",
+    "build": "pkg . --targets win-x64,linux-x64,macos-x64"
+  },
+  "keywords": [
+    "logging",
+    "vlogger",
+    "cli",
+    "multi-language",
+    "monitoring",
+    "dashboard"
+  ],
+  "author": "Jules Mahounou",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ksnjkdppdojdim-star/vlogger.git"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "optionalDependencies": {
+    "pkg": "^5.8.0"
+  },
+  "files": [
+    "vlg.js",
+    "main.go",
+    "go.mod",
+    "build.bat",
+    "build.sh",
+    "README.md"
+  ]
+}

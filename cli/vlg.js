@@ -24,7 +24,7 @@ const { execSync, spawn } = require('child_process');
 const http = require('http');
 
 const VLOGGER_VERSION = '1.5.12';
-const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/yourusername/vlogger/main';
+const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/ksnjkdppdojdim-star/vlogger/main';
 
 /**
  * Language detection and management
@@ -1121,7 +1121,7 @@ class VLoggerCLI {
     console.log('  vlg doctor              # Check system requirements');
     
     console.log('\nFor more information, visit:');
-    console.log('  https://github.com/yourusername/vlogger');
+    console.log('  https://github.com/ksnjkdppdojdim-star/vlogger');
   }
 
   /**

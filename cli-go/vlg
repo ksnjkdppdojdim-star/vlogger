@@ -1,0 +1,20 @@
+#!/bin/bash
+# VLogger CLI Wrapper pour Linux/macOS
+# Place ce fichier dans /usr/local/bin/vlg et rendez-le exécutable:
+#   chmod +x /usr/local/bin/vlg
+
+VLGDIR="$(cd "$(dirname "$0")" && pwd)"
+
+# Chercher vlg.js
+if [ -f "vlg.js" ]; then
+    VLGSCRIPT="vlg.js"
+elif [ -f "$VLGDIR/vlg.js" ]; then
+    VLGSCRIPT="$VLGDIR/vlg.js"
+else
+    echo "❌ Erreur: vlg.js non trouvé"
+    echo "Assurez-vous que vlg.js est dans le répertoire courant ou dans $VLGDIR"
+    exit 1
+fi
+
+# Exécuter le CLI avec Node.js
+node "$VLGSCRIPT" "$@"

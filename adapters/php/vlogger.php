@@ -1024,24 +1024,3 @@ $totalErrors = count(array_filter($logs, function($log) {
 }
 
 ?>
-
-                <div class="log-entry">
-                    <strong><?= htmlspecialchars($log["method"]) ?> <?= htmlspecialchars($log["path"]) ?></strong>
-                    <span style="color: <?= $log["isError"] ? "red" : "green" ?>;">
-                        <?= $log["response"]["status"] ?? "N/A" ?>
-                    </span>
-                    <span style="color: #666;">(<?= round($log["performance"]["duration"] ?? 0) ?>ms)</span>
-                    <br>
-                    <small><?= $log["timestamp"] ?></small>
-                </div>
-            <?php endforeach; ?>
-        </div>
-    </div>
-</body>
-</html>';
-
-        file_put_contents($filepath, $script);
-    }
-}
-
-?>
