@@ -17,7 +17,6 @@
   "author": "VLogger Community",
   "license": "MIT",
   "dependencies": {
-    "@mahounou/vlogger": "file:../../adapters/javascript",
     "express": "^4.18.2"
   },
   "engines": {

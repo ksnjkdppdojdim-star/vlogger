@@ -63,7 +63,7 @@ Le fichier `SHA256SUMS.txt` est attaché à la release — comparez les valeurs.
 Le paquet JavaScript est publié sur npm sous le nom `@mahounou/vlogger`.
 
 ```bash
-npm install @mahounou/vlogger
+npm i @mahounou/vlogger
 ```
 
 Exemple d'utilisation (Express) :
