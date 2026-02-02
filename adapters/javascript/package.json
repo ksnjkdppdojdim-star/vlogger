@@ -1,0 +1,30 @@
+{
+  "name": "@mahounou/vlogger",
+  "version": "1.5.12",
+  "description": "VLogger JavaScript adapter / Express middleware",
+  "main": "vlogger.js",
+  "files": [
+    "vlogger.js",
+    "README.md"
+  ],
+  "keywords": [
+    "vlogger",
+    "logging",
+    "express",
+    "middleware",
+    "logger",
+    "api-monitoring"
+  ],
+  "author": "Jules Mahounou",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ksnjkdppdojdim-star/vlogger.git"
+  },
+  "dependencies": {
+    "vlogger": "file:vlogger-1.5.12.tgz"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
