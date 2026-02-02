@@ -1,13 +1,13 @@
 {
   "name": "{{project_name}}",
   "language": "{{language}}",
-  "version": "1.0.0",
+  "version": "1.5.12",
   "description": "{{project_name}} - VLogger enabled project",
   "author": "",
   "email": "",
   "license": "MIT",
   "vlogger": {
-    "version": "^1.0.0",
+    "version": "^1.5.12",
     "adapter": "adapters/{{language}}/vlogger.{{extension}}",
     "config": {
       "dashboard": {

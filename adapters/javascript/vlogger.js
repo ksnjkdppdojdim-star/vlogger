@@ -2,7 +2,7 @@
  * VLogger JavaScript/Node.js Adapter
  * 
  * @author Jules Mahounou
- * @version 1.0.0
+ * @version 1.5.12
  * @license MIT
  * 
  * This adapter provides VLogger integration for JavaScript/Node.js applications
@@ -107,7 +107,7 @@ class VLogger {
   loadProjectInfo() {
     const defaultInfo = {
       name: 'Node.js Project',
-      version: '1.0.0',
+      version: '1.5.12',
       description: 'Node.js application with VLogger',
       api: { version: '1.0', baseUrl: 'http://localhost:3000' }
     };

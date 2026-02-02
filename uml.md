@@ -1,7 +1,7 @@
 # Cahier UML - VLogger
 ## Projet de Logger API Open Source
 
-**Version:** 1.0.0  
+**Version:** 1.5.12  
 **Date:** 30 Janvier 2026  
 **Auteur:** Votre Équipe  
 

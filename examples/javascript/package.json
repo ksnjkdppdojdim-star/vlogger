@@ -1,6 +1,6 @@
 {
   "name": "vlogger-example-express",
-  "version": "1.0.0",
+  "version": "1.5.12",
   "description": "Example Express.js application with VLogger integration",
   "main": "app.js",
   "scripts": {

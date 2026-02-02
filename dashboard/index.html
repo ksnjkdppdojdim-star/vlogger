@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="./style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
 </head>
-<body>
+<body data-theme="auto">
     <div class="container">
         <!-- Header -->
         <header class="header">
@@ -20,6 +20,50 @@
                 <div class="project-info" id="project-info">
                     <span class="project-name" id="project-name">Loading...</span>
                     <span class="project-version" id="project-version"></span>
+                </div>
+                
+                <!-- Header Controls -->
+                <div class="header-controls">
+                    <div class="search-container">
+                        <input type="text" id="search-input" placeholder="Search logs..." class="search-input">
+                        <button id="search-clear" class="search-clear" title="Clear search">×</button>
+                    </div>
+                    
+                    <div class="filter-container">
+                        <select id="method-filter" class="filter-select">
+                            <option value="">All Methods</option>
+                            <option value="GET">GET</option>
+                            <option value="POST">POST</option>
+                            <option value="PUT">PUT</option>
+                            <option value="DELETE">DELETE</option>
+                            <option value="PATCH">PATCH</option>
+                        </select>
+                        
+                        <select id="status-filter" class="filter-select">
+                            <option value="">All Status</option>
+                            <option value="2xx">2xx Success</option>
+                            <option value="3xx">3xx Redirect</option>
+                            <option value="4xx">4xx Client Error</option>
+                            <option value="5xx">5xx Server Error</option>
+                        </select>
+                        
+                        <select id="time-filter" class="filter-select">
+                            <option value="">All Time</option>
+                            <option value="1h">Last Hour</option>
+                            <option value="24h">Last 24 Hours</option>
+                            <option value="7d">Last 7 Days</option>
+                        </select>
+                    </div>
+                    
+                    <div class="theme-controls">
+                        <button id="theme-toggle" class="btn btn-outline" title="Toggle theme">
+                            <span class="theme-icon">🌙</span>
+                        </button>
+                        
+                        <button id="fullscreen-toggle" class="btn btn-outline" title="Toggle fullscreen">
+                            <span class="fullscreen-icon">⛶</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </header>
@@ -57,6 +101,22 @@
                     <div class="stat-number" id="endpoints">0</div>
                 </div>
             </div>
+            
+            <div class="stat-card warning">
+                <div class="stat-icon">⚡</div>
+                <div class="stat-content">
+                    <div class="stat-label">Avg Response</div>
+                    <div class="stat-number" id="avg-response">0ms</div>
+                </div>
+            </div>
+            
+            <div class="stat-card info">
+                <div class="stat-icon">📊</div>
+                <div class="stat-content">
+                    <div class="stat-label">Success Rate</div>
+                    <div class="stat-number" id="success-rate">100%</div>
+                </div>
+            </div>
         </section>
 
         <!-- Tabs Navigation -->
@@ -65,6 +125,7 @@
             <button class="tab-button" data-tab="endpoints">Endpoints</button>
             <button class="tab-button" data-tab="performance">Performance</button>
             <button class="tab-button" data-tab="errors">Errors</button>
+            <button class="tab-button" data-tab="analytics">Analytics</button>
         </nav>
 
         <!-- Tab Content -->
@@ -74,10 +135,21 @@
                 <div class="panel-header">
                     <h2>Recent Requests</h2>
                     <div class="controls">
+                        <div class="log-controls">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="auto-scroll" checked>
+                                Auto-scroll
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="show-details">
+                                Show details
+                            </label>
+                        </div>
                         <button class="btn btn-outline" id="clear-logs">Clear View</button>
                         <button class="btn btn-outline" id="auto-refresh" data-enabled="true">
                             Auto-refresh: ON
                         </button>
+                        <button class="btn btn-primary" onclick="downloadLogs()">Export</button>
                     </div>
                 </div>
                 <div class="logs-container" id="logs">
@@ -87,12 +159,27 @@
                         <small>Start making requests to see logs appear here</small>
                     </div>
                 </div>
+                
+                <!-- Pagination -->
+                <div class="pagination" id="logs-pagination" style="display: none;">
+                    <button class="btn btn-outline" id="prev-page">← Previous</button>
+                    <span class="page-info" id="page-info">Page 1 of 1</span>
+                    <button class="btn btn-outline" id="next-page">Next →</button>
+                </div>
             </section>
 
             <!-- Endpoints Tab -->
             <section class="tab-panel" id="endpoints-tab">
                 <div class="panel-header">
                     <h2>Endpoint Analytics</h2>
+                    <div class="controls">
+                        <select id="endpoint-sort" class="filter-select">
+                            <option value="calls">Sort by Calls</option>
+                            <option value="errors">Sort by Errors</option>
+                            <option value="avgDuration">Sort by Avg Duration</option>
+                            <option value="maxDuration">Sort by Max Duration</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="endpoints-container" id="endpoints">
                     <div class="empty-state">
@@ -106,6 +193,13 @@
             <section class="tab-panel" id="performance-tab">
                 <div class="panel-header">
                     <h2>Performance Metrics</h2>
+                    <div class="controls">
+                        <select id="performance-timeframe" class="filter-select">
+                            <option value="1h">Last Hour</option>
+                            <option value="24h">Last 24 Hours</option>
+                            <option value="7d">Last 7 Days</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="performance-container" id="performance">
                     <div class="empty-state">
@@ -119,11 +213,93 @@
             <section class="tab-panel" id="errors-tab">
                 <div class="panel-header">
                     <h2>Error Analysis</h2>
+                    <div class="controls">
+                        <select id="error-grouping" class="filter-select">
+                            <option value="status">Group by Status</option>
+                            <option value="endpoint">Group by Endpoint</option>
+                            <option value="time">Group by Time</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="errors-container" id="errors">
                     <div class="empty-state">
                         <div class="empty-icon">🚨</div>
                         <p>No errors to display</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Analytics Tab -->
+            <section class="tab-panel" id="analytics-tab">
+                <div class="panel-header">
+                    <h2>Analytics & Insights</h2>
+                    <div class="controls">
+                        <select id="analytics-period" class="filter-select">
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="analytics-container" id="analytics">
+                    <div class="analytics-grid">
+                        <div class="analytics-card">
+                            <h3>Request Volume</h3>
+                            <div class="chart-placeholder" id="volume-chart">
+                                <div class="chart-bar" style="height: 60%"></div>
+                                <div class="chart-bar" style="height: 80%"></div>
+                                <div class="chart-bar" style="height: 40%"></div>
+                                <div class="chart-bar" style="height: 90%"></div>
+                                <div class="chart-bar" style="height: 70%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="analytics-card">
+                            <h3>Response Times</h3>
+                            <div class="chart-placeholder" id="response-chart">
+                                <div class="chart-line"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="analytics-card">
+                            <h3>Status Distribution</h3>
+                            <div class="status-distribution" id="status-distribution">
+                                <div class="status-item">
+                                    <span class="status-color status-2xx"></span>
+                                    <span>2xx: 85%</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-color status-4xx"></span>
+                                    <span>4xx: 10%</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-color status-5xx"></span>
+                                    <span>5xx: 5%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="analytics-card">
+                            <h3>Top User Agents</h3>
+                            <div class="user-agents" id="user-agents">
+                                <div class="user-agent-item">
+                                    <span>Chrome</span>
+                                    <span class="percentage">45%</span>
+                                </div>
+                                <div class="user-agent-item">
+                                    <span>Firefox</span>
+                                    <span class="percentage">25%</span>
+                                </div>
+                                <div class="user-agent-item">
+                                    <span>Safari</span>
+                                    <span class="percentage">20%</span>
+                                </div>
+                                <div class="user-agent-item">
+                                    <span>Other</span>
+                                    <span class="percentage">10%</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -133,9 +309,10 @@
         <footer class="footer">
             <p>&copy; 2026 VLogger by Jules Mahounou. Open source logging solution.</p>
             <div class="footer-links">
-                <a href="https://github.com/ksnjkdppdojdim-star/vlogger" target="_blank">GitHub</a>
+                <a href="https://github.com/yourusername/vlogger" target="_blank">GitHub</a>
                 <a href="#" onclick="downloadLogs()">Export Logs</a>
                 <a href="#" onclick="showSettings()">Settings</a>
+                <a href="#" onclick="showKeyboardShortcuts()">Shortcuts</a>
             </div>
         </footer>
     </div>
@@ -181,6 +358,20 @@
                         Show performance metrics
                     </label>
                 </div>
+                <div class="setting-group">
+                    <label>
+                        <input type="checkbox" id="enable-notifications">
+                        Enable browser notifications
+                    </label>
+                </div>
+                <div class="setting-group">
+                    <label for="theme-preference">Theme</label>
+                    <select id="theme-preference">
+                        <option value="auto">Auto (System)</option>
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                    </select>
+                </div>
                 <div class="modal-actions">
                     <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
                     <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
@@ -189,6 +380,59 @@
         </div>
     </div>
 
+    <!-- Keyboard Shortcuts Modal -->
+    <div class="modal" id="shortcuts-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Keyboard Shortcuts</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="shortcuts-grid">
+                    <div class="shortcut-item">
+                        <kbd>Ctrl/Cmd + 1</kbd>
+                        <span>Switch to Logs tab</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl/Cmd + 2</kbd>
+                        <span>Switch to Endpoints tab</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl/Cmd + 3</kbd>
+                        <span>Switch to Performance tab</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl/Cmd + 4</kbd>
+                        <span>Switch to Errors tab</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl/Cmd + R</kbd>
+                        <span>Refresh data</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl/Cmd + F</kbd>
+                        <span>Focus search</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl/Cmd + D</kbd>
+                        <span>Toggle theme</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Escape</kbd>
+                        <span>Close modal/Clear search</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>F11</kbd>
+                        <span>Toggle fullscreen</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>?</kbd>
+                        <span>Show this help</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <script src="./script.js"></script>
 </body>
 </html>

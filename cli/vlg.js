@@ -4,7 +4,7 @@
  * VLogger CLI Tool - Universal project management for VLogger
  * 
  * @author Jules Mahounou  
- * @version 1.0.0
+ * @version 1.5.12
  * 
  * Global CLI tool for managing VLogger across different projects and languages.
  * 
@@ -23,9 +23,104 @@ const path = require('path');
 const { execSync, spawn } = require('child_process');
 const http = require('http');
 
-const VLOGGER_VERSION = '1.0.0';
-const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/ksnjkdppdojdim-star/vlogger/main';
+const VLOGGER_VERSION = '1.5.12';
+const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/yourusername/vlogger/main';
 
+/**
+ * Language detection and management
+ */
+const LANGUAGE_CONFIGS = {
+  javascript: {
+    detectionFiles: ['package.json', 'yarn.lock', 'pnpm-lock.yaml'],
+    detectionContent: {
+      'package.json': content => {
+        try {
+          const pkg = JSON.parse(content);
+          return pkg.dependencies || pkg.devDependencies || pkg.scripts;
+        } catch { return false; }
+      }
+    },
+    extension: 'js',
+    startCommands: ['npm start', 'yarn start', 'node app.js', 'node server.js', 'node index.js'],
+    installCommand: 'npm install',
+    requirements: ['node --version'],
+    minVersion: '14.0.0'
+  },
+  php: {
+    detectionFiles: ['composer.json', 'composer.lock', 'index.php', 'app.php'],
+    detectionContent: {
+      'composer.json': content => {
+        try {
+          const composer = JSON.parse(content);
+          return composer.require || composer['require-dev'];
+        } catch { return false; }
+      }
+    },
+    extension: 'php',
+    startCommands: ['php -S localhost:8000', 'php artisan serve', 'symfony serve'],
+    installCommand: 'composer install',
+    requirements: ['php --version'],
+    minVersion: '7.4.0'
+  },
+  python: {
+    detectionFiles: ['requirements.txt', 'setup.py', 'pyproject.toml', 'Pipfile', 'app.py', 'main.py'],
+    detectionContent: {
+      'requirements.txt': content => content.trim().length > 0,
+      'pyproject.toml': content => content.includes('[tool.poetry]') || content.includes('[build-system]'),
+      'setup.py': content => content.includes('setup(')
+    },
+    extension: 'py',
+    startCommands: ['python app.py', 'python main.py', 'flask run', 'python manage.py runserver', 'uvicorn main:app'],
+    installCommand: 'pip install -r requirements.txt',
+    requirements: ['python --version', 'python3 --version'],
+    minVersion: '3.8.0'
+  },
+  java: {
+    detectionFiles: ['pom.xml', 'build.gradle', 'build.gradle.kts', 'Main.java', 'App.java'],
+    detectionContent: {
+      'pom.xml': content => content.includes('<groupId>') && content.includes('<artifactId>'),
+      'build.gradle': content => content.includes('dependencies') || content.includes('plugins')
+    },
+    extension: 'java',
+    startCommands: ['mvn spring-boot:run', 'gradle bootRun', 'java -jar target/*.jar', 'java Main'],
+    installCommand: 'mvn install',
+    requirements: ['java --version', 'javac --version'],
+    minVersion: '11.5.12'
+  },
+  go: {
+    detectionFiles: ['go.mod', 'go.sum', 'main.go'],
+    detectionContent: {
+      'go.mod': content => content.includes('module ') && content.includes('go ')
+    },
+    extension: 'go',
+    startCommands: ['go run main.go', 'go run .', './main'],
+    installCommand: 'go mod tidy',
+    requirements: ['go version'],
+    minVersion: '1.19.0'
+  },
+  rust: {
+    detectionFiles: ['Cargo.toml', 'Cargo.lock', 'main.rs'],
+    detectionContent: {
+      'Cargo.toml': content => content.includes('[package]') && content.includes('name =')
+    },
+    extension: 'rs',
+    startCommands: ['cargo run'],
+    installCommand: 'cargo build',
+    requirements: ['rustc --version', 'cargo --version'],
+    minVersion: '1.70.0'
+  },
+  csharp: {
+    detectionFiles: ['*.csproj', '*.sln', 'Program.cs'],
+    detectionContent: {
+      '*.csproj': content => content.includes('<Project') && content.includes('Sdk=')
+    },
+    extension: 'cs',
+    startCommands: ['dotnet run'],
+    installCommand: 'dotnet restore',
+    requirements: ['dotnet --version'],
+    minVersion: '6.0.0'
+  }
+};
 /**
  * VLogger CLI class
  */
@@ -65,6 +160,9 @@ class VLoggerCLI {
       case 'version':
         this.showVersion();
         break;
+      case 'doctor':
+        this.runDiagnostics();
+        break;
       case 'help':
       default:
         this.showHelp();
@@ -82,6 +180,11 @@ class VLoggerCLI {
     const language = this.detectProjectLanguage();
     console.log(`📋 Detected language: ${language}`);
 
+    // Verify language requirements
+    if (!this.verifyLanguageRequirements(language)) {
+      console.error(`❌ ${language} requirements not met. Run 'vlg doctor' for details.`);
+      process.exit(1);
+    }
     // Create install.vlg file
     const installConfig = this.createInstallConfig(language);
     this.writeFile('install.vlg', JSON.stringify(installConfig, null, 2));
@@ -106,44 +209,83 @@ class VLoggerCLI {
   }
 
   /**
-   * Detect project programming language
+   * Enhanced project language detection
    */
   detectProjectLanguage() {
-    // Check for package.json (Node.js)
-    if (fs.existsSync(path.join(this.cwd, 'package.json'))) {
-      return 'javascript';
+    const scores = {};
+    
+    // Initialize scores
+    Object.keys(LANGUAGE_CONFIGS).forEach(lang => {
+      scores[lang] = 0;
+    });
+    
+    // Check for detection files
+    Object.entries(LANGUAGE_CONFIGS).forEach(([language, config]) => {
+      config.detectionFiles.forEach(file => {
+        const filePath = path.join(this.cwd, file);
+        
+        // Handle glob patterns
+        if (file.includes('*')) {
+          const files = this.globFiles(file);
+          if (files.length > 0) {
+            scores[language] += 10;
+          }
+        } else if (fs.existsSync(filePath)) {
+          scores[language] += 10;
+          
+          // Check file content if validator exists
+          if (config.detectionContent && config.detectionContent[file]) {
+            try {
+              const content = fs.readFileSync(filePath, 'utf8');
+              if (config.detectionContent[file](content)) {
+                scores[language] += 5;
+              }
+            } catch (e) {
+              // Ignore file read errors
+            }
+          }
+        }
+      });
+    });
+    
+    // Find language with highest score
+    const detectedLanguage = Object.entries(scores)
+      .sort(([,a], [,b]) => b - a)[0][0];
+    
+    // If no clear winner, default to javascript
+    return scores[detectedLanguage] > 0 ? detectedLanguage : 'javascript';
+  }
+  
+  /**
+   * Simple glob file matching
+   */
+  globFiles(pattern) {
+    try {
+      const files = fs.readdirSync(this.cwd);
+      const regex = new RegExp(pattern.replace(/\*/g, '.*'));
+      return files.filter(file => regex.test(file));
+    } catch (e) {
+      return [];
     }
-
-    // Check for composer.json (PHP)
-    if (fs.existsSync(path.join(this.cwd, 'composer.json'))) {
-      return 'php';
+  }
+  
+  /**
+   * Verify language requirements
+   */
+  verifyLanguageRequirements(language) {
+    const config = LANGUAGE_CONFIGS[language];
+    if (!config) return true;
+    
+    for (const requirement of config.requirements) {
+      try {
+        execSync(requirement, { stdio: 'ignore' });
+      } catch (e) {
+        console.error(`❌ Missing requirement: ${requirement}`);
+        return false;
+      }
     }
-
-    // Check for requirements.txt or setup.py (Python)
-    if (fs.existsSync(path.join(this.cwd, 'requirements.txt')) || 
-        fs.existsSync(path.join(this.cwd, 'setup.py')) ||
-        fs.existsSync(path.join(this.cwd, 'pyproject.toml'))) {
-      return 'python';
-    }
-
-    // Check for pom.xml or build.gradle (Java)
-    if (fs.existsSync(path.join(this.cwd, 'pom.xml')) || 
-        fs.existsSync(path.join(this.cwd, 'build.gradle'))) {
-      return 'java';
-    }
-
-    // Check for go.mod (Go)
-    if (fs.existsSync(path.join(this.cwd, 'go.mod'))) {
-      return 'go';
-    }
-
-    // Check for Cargo.toml (Rust)
-    if (fs.existsSync(path.join(this.cwd, 'Cargo.toml'))) {
-      return 'rust';
-    }
-
-    // Default to JavaScript
-    return 'javascript';
+    
+    return true;
   }
 
   /**
@@ -151,15 +293,16 @@ class VLoggerCLI {
    */
   createInstallConfig(language) {
     const projectName = path.basename(this.cwd);
+    const config = LANGUAGE_CONFIGS[language];
     
     return {
       name: projectName,
       language: language,
-      version: "1.0.0",
+      version: "1.5.12",
       description: `${projectName} - VLogger enabled project`,
       vlogger: {
         version: `^${VLOGGER_VERSION}`,
-        adapter: `adapters/${language}/vlogger.${this.getLanguageExtension(language)}`,
+        adapter: `adapters/${language}/vlogger.${config.extension}`,
         config: {
           dashboard: {
             enabled: true,
@@ -195,20 +338,6 @@ class VLoggerCLI {
     };
   }
 
-  /**
-   * Get file extension for language
-   */
-  getLanguageExtension(language) {
-    const extensions = {
-      'javascript': 'js',
-      'php': 'php',
-      'python': 'py',
-      'java': 'java',
-      'go': 'go',
-      'rust': 'rs'
-    };
-    return extensions[language] || 'js';
-  }
 
   /**
    * Create VLogger configuration
@@ -260,7 +389,7 @@ class VLoggerCLI {
     
     return {
       name: projectName,
-      version: "1.0.0",
+      version: "1.5.12",
       description: `${projectName} API`,
       author: "",
       email: "",
@@ -298,6 +427,11 @@ class VLoggerCLI {
 
     console.log(`🔧 Installing ${language} adapter...`);
 
+    // Verify language requirements again
+    if (!this.verifyLanguageRequirements(language)) {
+      console.error(`❌ ${language} requirements not met. Run 'vlg doctor' for details.`);
+      process.exit(1);
+    }
     // Download adapter file
     this.downloadAdapter(language, adapter);
 
@@ -310,61 +444,35 @@ class VLoggerCLI {
   }
 
   /**
-   * Télécharge un fichier depuis GitHub (ou autre URL)
-   * @param {string} url - URL du fichier raw
-   * @param {string} dest - chemin local de destination
-   */
-  downloadFile(url, dest) {
-    const fs = require('fs');
-    const { execSync } = require('child_process');
-    const https = require('https');
-
-    if (this.hasCommand('curl')) {
-      // Utilise curl si disponible
-      try {
-        execSync(`curl -s -L "${url}" -o "${dest}"`, { stdio: 'inherit' });
-        console.log(`✅ Downloaded ${dest}`);
-        return;
-      } catch (error) {
-        console.warn(`⚠️ curl failed: ${error.message}, fallback to Node HTTPS`);
-      }
-    }
-
-    // Node HTTPS fallback
-    const file = fs.createWriteStream(dest);
-    https.get(url, (res) => {
-      if (res.statusCode !== 200) {
-        console.error(`❌ Failed to download ${url} (status: ${res.statusCode})`);
-        return;
-      }
-      res.pipe(file);
-      file.on('finish', () => {
-        file.close();
-        console.log(`✅ Downloaded ${dest}`);
-      });
-    }).on('error', (err) => {
-      fs.unlinkSync(dest);
-      console.error(`❌ Download error: ${err.message}`);
-    });
-  }
-
-
-  /**
    * Download adapter from GitHub
    */
   downloadAdapter(language, adapterPath) {
     const fileName = path.basename(adapterPath);
     const url = `${GITHUB_BASE_URL}/${adapterPath}`;
     
-    console.log(`📥 Downloading ${fileName}...`);
-    this.downloadFile(url, fileName);
+    try {
+      console.log(`📥 Downloading ${fileName}...`);
+      
+      // Use curl or wget to download
+      const command = this.hasCommand('curl') ? 
+        `curl -s -L "${url}" -o "${fileName}"` :
+        `wget -q "${url}" -O "${fileName}"`;
+      
+      execSync(command, { stdio: 'inherit' });
+      console.log(`✅ Downloaded ${fileName}`);
+    } catch (error) {
+      console.error(`❌ Failed to download adapter: ${error.message}`);
+      console.log('\n🔗 Manual download:');
+      console.log(`   ${url}`);
+      process.exit(1);
+    }
   }
-
 
   /**
    * Copy additional required files
    */
   copyAdditionalFiles(language) {
+    // Download dashboard files
     this.ensureDirectory('dashboard');
     
     const dashboardFiles = ['index.html', 'style.css', 'script.js'];
@@ -372,11 +480,18 @@ class VLoggerCLI {
       const url = `${GITHUB_BASE_URL}/dashboard/${file}`;
       const localPath = `dashboard/${file}`;
       
-      console.log(`📥 Downloading dashboard/${file}...`);
-      this.downloadFile(url, localPath);
+      try {
+        const command = this.hasCommand('curl') ? 
+          `curl -s -L "${url}" -o "${localPath}"` :
+          `wget -q "${url}" -O "${localPath}"`;
+        
+        execSync(command, { stdio: 'inherit' });
+        console.log(`✅ Downloaded dashboard/${file}`);
+      } catch (error) {
+        console.warn(`⚠️  Could not download ${file}: ${error.message}`);
+      }
     });
   }
-
 
   /**
    * Check if command exists
@@ -499,71 +614,59 @@ class VLoggerCLI {
 
   /**
    * Start application with VLogger
-   * Usage:
-   *   npx vlg start           -> auto détecte le fichier principal
-   *   npx vlg start app.js    -> utilise app.js comme point d'entrée
    */
   startApplication() {
     console.log('🚀 Starting application with VLogger...\n');
 
-    // Check install.vlg exists
-    if (!fs.existsSync('install.vlg')) {
+    // Check install.vlg for start command
+    if (fs.existsSync('install.vlg')) {
+      const config = JSON.parse(fs.readFileSync('install.vlg', 'utf8'));
+      const language = config.language;
+
+      const command = this.findStartCommand(language);
+      if (command) {
+        console.log(`▶️  Starting ${language} application: ${command}`);
+        spawn(command, { shell: true, stdio: 'inherit' });
+      } else {
+        console.error('❌ No start command configured for this language');
+      }
+    } else {
       console.error('❌ No install.vlg found. Run "vlg init" first.');
-      return;
     }
-
-    const config = JSON.parse(fs.readFileSync('install.vlg', 'utf8'));
-    const language = config.language;
-
-    // Récupère le fichier principal passé en argument (ex: `npx vlg start app.js`)
-    const entryFile = this.args[0]; 
-
-    let command;
-
-    switch (language) {
-      case 'javascript':
-        if (entryFile && fs.existsSync(entryFile)) {
-          command = `node ${entryFile}`;
-        } else {
-          command = this.findNodeStartCommand();
-        }
-        break;
-
-      case 'php':
-        command = 'php -S localhost:8000';
-        break;
-
-      case 'python':
-        if (entryFile && fs.existsSync(entryFile)) {
-          command = `python ${entryFile}`;
-        } else {
-          command = this.findPythonStartCommand();
-        }
-        break;
-
-      case 'java':
-        command = 'mvn spring-boot:run';
-        break;
-
-      case 'go':
-        command = 'go run .';
-        break;
-
-      default:
-        console.error(`❌ No start command configured for language: ${language}`);
-        return;
-    }
-
-    if (!command) {
-      console.error('❌ Could not determine start command.');
-      return;
-    }
-
-    console.log(`▶️  Starting ${language} application: ${command}`);
-    spawn(command, { shell: true, stdio: 'inherit' });
   }
 
-
+  /**
+   * Find appropriate start command for language
+   */
+  findStartCommand(language) {
+    const config = LANGUAGE_CONFIGS[language];
+    if (!config) return null;
+    
+    // Try each start command until one works
+    for (const command of config.startCommands) {
+      if (this.canExecuteCommand(command)) {
+        return command;
+      }
+    }
+    
+    return config.startCommands[0]; // Fallback to first command
+  }
+  
+  /**
+   * Check if command can be executed
+   */
+  canExecuteCommand(command) {
+    const parts = command.split(' ');
+    const executable = parts[0];
+    
+    // Check if executable exists
+    try {
+      execSync(`which ${executable}`, { stdio: 'ignore' });
+      return true;
+    } catch {
+      return false;
+    }
+  }
   /**
    * Find Node.js start command
    */
@@ -609,6 +712,69 @@ class VLoggerCLI {
     return 'python app.py';
   }
 
+  /**
+   * Run system diagnostics
+   */
+  runDiagnostics() {
+    console.log('🔍 Running VLogger diagnostics...\n');
+    
+    // Check Node.js (required for CLI)
+    this.checkRequirement('Node.js', 'node --version', '14.0.0');
+    
+    // Check available languages
+    console.log('\n📋 Available Languages:');
+    Object.entries(LANGUAGE_CONFIGS).forEach(([language, config]) => {
+      console.log(`\n${language.toUpperCase()}:`);
+      let allMet = true;
+      
+      config.requirements.forEach(requirement => {
+        try {
+          const output = execSync(requirement, { encoding: 'utf8', stdio: 'pipe' });
+          console.log(`  ✅ ${requirement}: ${output.trim().split('\n')[0]}`);
+        } catch (e) {
+          console.log(`  ❌ ${requirement}: Not found`);
+          allMet = false;
+        }
+      });
+      
+      if (allMet) {
+        console.log(`  🎉 ${language} is ready!`);
+      } else {
+        console.log(`  ⚠️  ${language} requirements not met`);
+      }
+    });
+    
+    // Check current project
+    if (fs.existsSync('install.vlg')) {
+      console.log('\n📁 Current Project:');
+      const config = JSON.parse(fs.readFileSync('install.vlg', 'utf8'));
+      console.log(`  Language: ${config.language}`);
+      console.log(`  VLogger: ${config.vlogger.version}`);
+      
+      const adapterFile = path.basename(config.vlogger.adapter);
+      if (fs.existsSync(adapterFile)) {
+        console.log(`  ✅ Adapter installed: ${adapterFile}`);
+      } else {
+        console.log(`  ❌ Adapter missing: ${adapterFile}`);
+      }
+    }
+    
+    console.log('\n🏥 Diagnostics complete!');
+  }
+  
+  /**
+   * Check individual requirement
+   */
+  checkRequirement(name, command, minVersion) {
+    try {
+      const output = execSync(command, { encoding: 'utf8', stdio: 'pipe' });
+      console.log(`✅ ${name}: ${output.trim().split('\n')[0]}`);
+      return true;
+    } catch (e) {
+      console.log(`❌ ${name}: Not found or version too old (requires ${minVersion}+)`);
+      return false;
+    }
+  }
   /**
    * Open VLogger dashboard
    */
@@ -945,6 +1111,7 @@ class VLoggerCLI {
     console.log('  clean [--all]           Clean old log files');
     console.log('  export <format> [file]  Export logs (json|csv|markdown)');
     console.log('  config                  Show current configuration');
+    console.log('  doctor                  Run system diagnostics');
     console.log('  version                 Show version information');
     console.log('  help                    Show this help message');
     
@@ -955,9 +1122,10 @@ class VLoggerCLI {
     console.log('  vlg dashboard           # Open dashboard');
     console.log('  vlg export csv          # Export logs to CSV');
     console.log('  vlg clean --all         # Delete all log files');
+    console.log('  vlg doctor              # Check system requirements');
     
     console.log('\nFor more information, visit:');
-    console.log('  https://github.com/ksnjkdppdojdim-star/vlogger');
+    console.log('  https://github.com/yourusername/vlogger');
   }
 
   /**

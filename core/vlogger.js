@@ -2,7 +2,7 @@
  * VLogger Core - Universal Multi-Language Logging System
  * 
  * @author Jules Mahounou
- * @version 1.0.0
+ * @version 1.5.12
  * @license MIT
  * 
  * This is the core VLogger implementation that provides:
@@ -162,7 +162,7 @@ class VLogger {
   loadProjectInfo() {
     const defaultInfo = {
       name: 'Unknown Project',
-      version: '1.0.0',
+      version: '1.5.12',
       description: '',
       author: '',
       email: '',

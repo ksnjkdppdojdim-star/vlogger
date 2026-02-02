@@ -2,7 +2,7 @@
 VLogger Python Adapter
 
 @author: Jules Mahounou
-@version: 1.0.0
+@version: 1.5.12
 @license: MIT
 
 This adapter provides VLogger integration for Python applications
@@ -122,7 +122,7 @@ class VLogger:
         """Load project information"""
         default_info = {
             'name': 'Python Project',
-            'version': '1.0.0',
+            'version': '1.5.12',
             'description': 'Python application with VLogger',
             'api': {
                 'version': '1.0',

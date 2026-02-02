@@ -1,6 +1,6 @@
 {
   "name": "vlogger",
-  "version": "1.0.0",
+  "version": "1.5.12",
   "description": "Multi-language logging system with dashboard and CLI",
   "main": "core/vlogger.js",
   "bin": {

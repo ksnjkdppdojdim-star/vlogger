@@ -20,13 +20,13 @@ Project configuration file similar to `package.json` or `composer.json`.
 {
   "name": "my-api",
   "language": "javascript",
-  "version": "1.0.0",
+  "version": "1.5.12",
   "description": "My awesome API with VLogger",
   "author": "Your Name",
   "email": "you@example.com",
   "license": "MIT",
   "vlogger": {
-    "version": "^1.0.0",
+    "version": "^1.5.12",
     "adapter": "adapters/javascript/vlogger.js",
     "config": {
       "dashboard": {
@@ -223,7 +223,7 @@ Project information file:
 ```json
 {
   "name": "My API",
-  "version": "1.0.0",
+  "version": "1.5.12",
   "description": "RESTful API for my application",
   "author": "Your Name",
   "email": "you@example.com",

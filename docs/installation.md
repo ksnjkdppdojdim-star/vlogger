@@ -343,9 +343,9 @@ Project configuration file:
 {
   "name": "my-api",
   "language": "javascript",
-  "version": "1.0.0",
+  "version": "1.5.12",
   "vlogger": {
-    "version": "^1.0.0",
+    "version": "^1.5.12",
     "config": {
       "dashboard": {
         "enabled": true,

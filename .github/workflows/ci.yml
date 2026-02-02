@@ -1,0 +1,110 @@
+name: VLogger CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-javascript:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+    
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - run: npm ci
+    - run: npm test
+    - run: node examples/javascript/app.js &
+    - run: sleep 5 && curl -f http://localhost:3000 || exit 1
+
+  test-php:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version: ['7.4', '8.0', '8.1', '8.2', '8.3']
+    
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup PHP ${{ matrix.php-version }}
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-version }}
+        extensions: mbstring, json, curl
+    - name: Test PHP adapter
+      run: |
+        cd examples/php
+        php -S localhost:8000 app.php &
+        sleep 5
+        curl -f http://localhost:8000 || exit 1
+
+  test-python:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+    
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flask django fastapi uvicorn psutil
+    - name: Test Python adapters
+      run: |
+        cd examples/python
+        python flask_app.py &
+        sleep 5
+        curl -f http://localhost:5000 || exit 1
+
+  test-go:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ['1.19', '1.20', '1.21']
+    
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Go ${{ matrix.go-version }}
+      uses: actions/setup-go@v4
+      with:
+        go-version: ${{ matrix.go-version }}
+    - name: Test Go adapter
+      run: |
+        cd examples/go
+        go mod tidy
+        go run main.go &
+        sleep 5
+        curl -f http://localhost:8080 || exit 1
+
+  test-java:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java-version: ['11', '17', '21']
+    
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK ${{ matrix.java-version }}
+      uses: actions/setup-java@v3
+      with:
+        java-version: ${{ matrix.java-version }}
+        distribution: 'temurin'
+    - name: Test Java adapter
+      run: |
+        cd examples/java
+        javac -cp ".:lib/*" *.java
+        java -cp ".:lib/*" App &
+        sleep 10
+        curl -f http://localhost:8080 || exit 1
