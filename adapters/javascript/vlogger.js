@@ -630,7 +630,7 @@ class VLogger {
       } else if (pathname === '/script.js') {
         this.serveStaticFile(res, 'script.js', 'application/javascript');
       } else {
-        res.writeHead(404);
+        res.writeHead(404); 
         res.end('Not Found');
       }
     } catch (error) {
