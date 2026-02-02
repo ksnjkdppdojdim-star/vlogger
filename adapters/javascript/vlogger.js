@@ -625,6 +625,10 @@ class VLogger {
         this.serveLogs(res);
       } else if (pathname === '/api/project') {
         this.serveProjectInfo(res);
+      } else if (pathname === '/style.css') {
+        this.serveStaticFile(res, 'style.css', 'text/css');
+      } else if (pathname === '/script.js') {
+        this.serveStaticFile(res, 'script.js', 'application/javascript');
       } else {
         res.writeHead(404);
         res.end('Not Found');
@@ -636,11 +640,31 @@ class VLogger {
   }
 
   /**
+   * Serve static files from dashboard directory
+   */
+  serveStaticFile(res, filename, contentType) {
+    try {
+      const dashboardPath = path.join(__dirname, 'dashboard', filename);
+      if (fs.existsSync(dashboardPath)) {
+        const content = fs.readFileSync(dashboardPath, 'utf8');
+        res.writeHead(200, { 'Content-Type': contentType });
+        res.end(content);
+      } else {
+        res.writeHead(404);
+        res.end('File not found');
+      }
+    } catch (error) {
+      res.writeHead(500);
+      res.end('Error serving file');
+    }
+  }
+
+  /**
    * Serve dashboard HTML
    */
   serveDashboardHTML(res) {
     try {
-      const dashboardPath = path.join(__dirname, '../../dashboard/index.html');
+      const dashboardPath = path.join(__dirname, 'dashboard/index.html');
       if (fs.existsSync(dashboardPath)) {
         const html = fs.readFileSync(dashboardPath, 'utf8');
         res.writeHead(200, { 'Content-Type': 'text/html' });

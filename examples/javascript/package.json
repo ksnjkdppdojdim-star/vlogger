@@ -1,0 +1,26 @@
+{
+  "name": "vlogger-javascript-example",
+  "version": "1.5.12",
+  "description": "VLogger JavaScript adapter example with Express.js",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "vlogger",
+    "logging",
+    "express",
+    "javascript"
+  ],
+  "author": "VLogger Community",
+  "license": "MIT",
+  "dependencies": {
+    "@mahounou/vlogger": "file:../../adapters/javascript",
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=12.0.0"
+  }
+}
